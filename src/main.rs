@@ -4,6 +4,7 @@ mod config;
 mod gh;
 #[allow(dead_code)]
 mod git;
+mod index;
 #[allow(dead_code)]
 mod models;
 
@@ -118,7 +119,10 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Index => todo!("grove index"),
+        Commands::Index => {
+            let config = config::Config::load()?;
+            index::run(&config)?;
+        }
         Commands::Check { .. } => todo!("grove check"),
         Commands::Prune { .. } => todo!("grove prune"),
         Commands::Ls { what } => match what {
@@ -131,6 +135,8 @@ fn main() -> anyhow::Result<()> {
         },
         Commands::Api { .. } => todo!("grove api"),
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
