@@ -17,6 +17,7 @@ impl Config {
                 .context("could not determine home directory")?
                 .join("src"),
         };
+        let src_root = canonicalize_clean(&src_root).unwrap_or(src_root);
 
         let data_dir = match std::env::var("STATE_ROOT") {
             Ok(val) => PathBuf::from(val),
@@ -60,6 +61,17 @@ impl Config {
                 self.data_dir.display()
             )
         })
+    }
+}
+
+/// Canonicalize a path, stripping the `\\?\` extended-length prefix that Windows adds.
+fn canonicalize_clean(path: &PathBuf) -> std::io::Result<PathBuf> {
+    let canonical = std::fs::canonicalize(path)?;
+    let s = canonical.to_string_lossy();
+    if let Some(stripped) = s.strip_prefix(r"\\?\") {
+        Ok(PathBuf::from(stripped))
+    } else {
+        Ok(canonical)
     }
 }
 

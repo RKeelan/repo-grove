@@ -27,6 +27,12 @@ pub fn run(args: &[&str]) -> Result<GhOutput> {
 
 pub fn json<T: DeserializeOwned>(args: &[&str]) -> Result<T> {
     let output = run(args)?;
+    anyhow::ensure!(
+        output.success,
+        "gh {} failed: {}",
+        args.join(" "),
+        output.stderr.trim()
+    );
     serde_json::from_str(&output.stdout)
         .with_context(|| format!("failed to parse JSON from gh {}", args.join(" ")))
 }
@@ -39,6 +45,12 @@ pub fn api(endpoint: &str, extra_args: &[&str]) -> Result<GhOutput> {
 
 pub fn api_json<T: DeserializeOwned>(endpoint: &str, extra_args: &[&str]) -> Result<T> {
     let output = api(endpoint, extra_args)?;
+    anyhow::ensure!(
+        output.success,
+        "gh api {} failed: {}",
+        endpoint,
+        output.stderr.trim()
+    );
     serde_json::from_str(&output.stdout)
         .with_context(|| format!("failed to parse JSON from gh api {endpoint}"))
 }
