@@ -7,6 +7,7 @@ mod git;
 mod index;
 #[allow(dead_code)]
 mod models;
+mod update;
 
 use clap::{Parser, Subcommand};
 
@@ -22,9 +23,9 @@ enum Commands {
     /// Build or refresh the repository index
     Index,
 
-    /// Check repository readiness (clean working tree, up-to-date)
-    Check {
-        /// Check only this repo (owner/repo or repo name)
+    /// Fetch, pull, and report readiness for local checkouts
+    Update {
+        /// Update only this repo (owner/repo or repo name)
         #[arg(long)]
         repo: Option<String>,
     },
@@ -123,7 +124,10 @@ fn main() -> anyhow::Result<()> {
             let config = config::Config::load()?;
             index::run(&config)?;
         }
-        Commands::Check { .. } => todo!("grove check"),
+        Commands::Update { repo } => {
+            let config = config::Config::load()?;
+            update::run(&config, repo.as_deref())?;
+        }
         Commands::Prune { .. } => todo!("grove prune"),
         Commands::Ls { what } => match what {
             LsSubcommand::Prs { .. } => todo!("grove ls prs"),
