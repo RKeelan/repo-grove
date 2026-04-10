@@ -8,23 +8,10 @@ use crate::models::{ReadinessMode, Repo, RepoReadiness};
 
 pub fn run(config: &Config, repo_filter: Option<&str>) -> Result<()> {
     let idx = index::load(config)?;
-
-    let repos: Vec<&Repo> = match repo_filter {
-        Some(filter) => idx
-            .repos
-            .iter()
-            .filter(|r| r.full_name == filter || r.repo == filter)
-            .collect(),
-        None => idx.repos.iter().collect(),
-    };
+    let repos = index::filter_repos(&idx, repo_filter, "Index is empty — nothing to check.")?;
 
     if repos.is_empty() {
-        if let Some(filter) = repo_filter {
-            anyhow::bail!("no repo matching '{}' found in index", filter);
-        } else {
-            eprintln!("Index is empty — nothing to check.");
-            return Ok(());
-        }
+        return Ok(());
     }
 
     let results: Vec<Result<RepoReadiness>> =

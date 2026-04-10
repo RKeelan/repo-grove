@@ -7,6 +7,7 @@ mod git;
 mod index;
 #[allow(dead_code)]
 mod models;
+mod prune;
 mod update;
 
 use clap::{Parser, Subcommand};
@@ -128,7 +129,10 @@ fn main() -> anyhow::Result<()> {
             let config = config::Config::load()?;
             update::run(&config, repo.as_deref())?;
         }
-        Commands::Prune { .. } => todo!("grove prune"),
+        Commands::Prune { repo } => {
+            let config = config::Config::load()?;
+            prune::run(&config, repo.as_deref())?;
+        }
         Commands::Ls { what } => match what {
             LsSubcommand::Prs { .. } => todo!("grove ls prs"),
             LsSubcommand::Ci { .. } => todo!("grove ls ci"),

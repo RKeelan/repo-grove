@@ -80,6 +80,34 @@ pub fn load(config: &Config) -> Result<Index> {
     serde_json::from_str(&content).context("failed to parse index JSON")
 }
 
+/// Filter repos from the index by an optional name filter. Returns an error if a filter was
+/// provided but matched nothing. Prints `empty_msg` and returns an empty vec when the index
+/// itself is empty.
+pub fn filter_repos<'a>(
+    idx: &'a Index,
+    repo_filter: Option<&str>,
+    empty_msg: &str,
+) -> Result<Vec<&'a Repo>> {
+    let repos: Vec<&Repo> = match repo_filter {
+        Some(filter) => idx
+            .repos
+            .iter()
+            .filter(|r| r.full_name == filter || r.repo == filter)
+            .collect(),
+        None => idx.repos.iter().collect(),
+    };
+
+    if repos.is_empty() {
+        if let Some(filter) = repo_filter {
+            bail!("no repo matching '{}' found in index", filter);
+        } else {
+            eprintln!("{}", empty_msg);
+        }
+    }
+
+    Ok(repos)
+}
+
 fn discover_owners(config: &Config, previous: &Option<Index>) -> Result<Vec<Owner>> {
     let previous_dirs: HashMap<String, String> = previous
         .as_ref()
