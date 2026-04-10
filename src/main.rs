@@ -1,5 +1,6 @@
 #[allow(dead_code)]
 mod config;
+mod dependabot;
 #[allow(dead_code)]
 mod gh;
 #[allow(dead_code)]
@@ -143,7 +144,10 @@ fn main() -> anyhow::Result<()> {
             }
         }
         Commands::Dependabot { action } => match action {
-            DependabotAction::Merge { .. } => todo!("grove dependabot merge"),
+            DependabotAction::Merge { repo } => {
+                let config = config::Config::load()?;
+                dependabot::run_merge(&config, repo.as_deref())?;
+            }
         },
         Commands::Api { .. } => todo!("grove api"),
     }
