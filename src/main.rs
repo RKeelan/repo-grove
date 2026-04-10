@@ -5,6 +5,7 @@ mod gh;
 #[allow(dead_code)]
 mod git;
 mod index;
+mod ls;
 #[allow(dead_code)]
 mod models;
 mod prune;
@@ -133,11 +134,14 @@ fn main() -> anyhow::Result<()> {
             let config = config::Config::load()?;
             prune::run(&config, repo.as_deref())?;
         }
-        Commands::Ls { what } => match what {
-            LsSubcommand::Prs { .. } => todo!("grove ls prs"),
-            LsSubcommand::Ci { .. } => todo!("grove ls ci"),
-            LsSubcommand::Issues { .. } => todo!("grove ls issues"),
-        },
+        Commands::Ls { what } => {
+            let config = config::Config::load()?;
+            match what {
+                LsSubcommand::Prs { stdout } => ls::run_prs(&config, stdout)?,
+                LsSubcommand::Ci { stdout } => ls::run_ci(&config, stdout)?,
+                LsSubcommand::Issues { stdout } => ls::run_issues(&config, stdout)?,
+            }
+        }
         Commands::Dependabot { action } => match action {
             DependabotAction::Merge { .. } => todo!("grove dependabot merge"),
         },

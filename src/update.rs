@@ -4,7 +4,7 @@ use rayon::prelude::*;
 use crate::config::Config;
 use crate::git;
 use crate::index;
-use crate::models::{ReadinessMode, Repo, RepoReadiness};
+use crate::models::{path_display_string, ReadinessMode, Repo, RepoReadiness};
 
 pub fn run(config: &Config, repo_filter: Option<&str>) -> Result<()> {
     let idx = index::load(config)?;
@@ -49,10 +49,7 @@ pub fn check_repo(repo: &Repo) -> Result<RepoReadiness> {
     let repo_path = match &repo.path {
         Some(p) if p.join(".git").exists() => p.clone(),
         other => {
-            let path_str = other
-                .as_ref()
-                .map(|p| p.to_string_lossy().to_string())
-                .unwrap_or_default();
+            let path_str = path_display_string(other.as_ref());
             return Ok(RepoReadiness {
                 timestamp: now,
                 repo_path: path_str,
