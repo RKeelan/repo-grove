@@ -2,6 +2,12 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+/// Convert an optional PathBuf to a display string, returning "" for None.
+pub fn path_display_string(path: Option<&PathBuf>) -> String {
+    path.map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_default()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Index {
     pub generated_at: String,
