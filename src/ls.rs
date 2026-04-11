@@ -33,7 +33,8 @@ pub fn run_prs(config: &Config, stdout: bool) -> Result<()> {
             }
         };
 
-        let dependabot_prs: Vec<&GhPr> = prs.iter().filter(|pr| is_dependabot_author(pr)).collect();
+        let dependabot_prs: Vec<&GhPr> =
+            prs.iter().filter(|pr| pr.author.is_dependabot()).collect();
 
         if dependabot_prs.is_empty() {
             continue;
@@ -174,12 +175,7 @@ struct GhPr {
     is_draft: bool,
     #[serde(rename = "updatedAt")]
     updated_at: String,
-    author: GhAuthor,
-}
-
-#[derive(Deserialize)]
-struct GhAuthor {
-    login: String,
+    author: gh::GhAuthor,
 }
 
 #[derive(Deserialize)]
@@ -251,10 +247,6 @@ fn fetch_open_issues(full_name: &str) -> Result<Vec<GhIssue>> {
         "--json",
         "number,title,url,createdAt,updatedAt",
     ])
-}
-
-fn is_dependabot_author(pr: &GhPr) -> bool {
-    pr.author.login == "app/dependabot" || pr.author.login == "dependabot[bot]"
 }
 
 /// Group workflow runs by workflow name, take the latest completed non-dependabot run
@@ -368,57 +360,6 @@ fn write_output<T: serde::Serialize>(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn is_dependabot_author_matches_bot_login() {
-        let pr = GhPr {
-            number: 1,
-            title: "Bump foo".to_string(),
-            url: "https://github.com/test/repo/pull/1".to_string(),
-            head_ref_name: "dependabot/npm/foo-1.0".to_string(),
-            base_ref_name: "main".to_string(),
-            is_draft: false,
-            updated_at: "2026-01-01T00:00:00Z".to_string(),
-            author: GhAuthor {
-                login: "dependabot[bot]".to_string(),
-            },
-        };
-        assert!(is_dependabot_author(&pr));
-    }
-
-    #[test]
-    fn is_dependabot_author_matches_app_login() {
-        let pr = GhPr {
-            number: 2,
-            title: "Bump bar".to_string(),
-            url: "https://github.com/test/repo/pull/2".to_string(),
-            head_ref_name: "dependabot/npm/bar-2.0".to_string(),
-            base_ref_name: "main".to_string(),
-            is_draft: false,
-            updated_at: "2026-01-01T00:00:00Z".to_string(),
-            author: GhAuthor {
-                login: "app/dependabot".to_string(),
-            },
-        };
-        assert!(is_dependabot_author(&pr));
-    }
-
-    #[test]
-    fn is_dependabot_author_rejects_other() {
-        let pr = GhPr {
-            number: 3,
-            title: "Fix bug".to_string(),
-            url: "https://github.com/test/repo/pull/3".to_string(),
-            head_ref_name: "fix-bug".to_string(),
-            base_ref_name: "main".to_string(),
-            is_draft: false,
-            updated_at: "2026-01-01T00:00:00Z".to_string(),
-            author: GhAuthor {
-                login: "octocat".to_string(),
-            },
-        };
-        assert!(!is_dependabot_author(&pr));
-    }
 
     #[test]
     fn extract_failures_groups_by_workflow_and_filters() {

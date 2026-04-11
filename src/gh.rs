@@ -2,6 +2,18 @@ use std::process::Command;
 
 use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct GhAuthor {
+    pub login: String,
+}
+
+impl GhAuthor {
+    pub fn is_dependabot(&self) -> bool {
+        self.login == "app/dependabot" || self.login == "dependabot[bot]"
+    }
+}
 
 pub struct GhOutput {
     pub success: bool,
@@ -63,5 +75,29 @@ mod tests {
     fn run_returns_ok_with_failure_status_on_bad_command() {
         let output = run(&["__nonexistent_subcommand__"]).unwrap();
         assert!(!output.success);
+    }
+
+    #[test]
+    fn is_dependabot_matches_bot_login() {
+        let author = GhAuthor {
+            login: "dependabot[bot]".to_string(),
+        };
+        assert!(author.is_dependabot());
+    }
+
+    #[test]
+    fn is_dependabot_matches_app_login() {
+        let author = GhAuthor {
+            login: "app/dependabot".to_string(),
+        };
+        assert!(author.is_dependabot());
+    }
+
+    #[test]
+    fn is_dependabot_rejects_other() {
+        let author = GhAuthor {
+            login: "octocat".to_string(),
+        };
+        assert!(!author.is_dependabot());
     }
 }
