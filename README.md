@@ -22,4 +22,4 @@ A Rust CLI tool for managing a collection of Git repositories.
 - `cargo clippy --all-targets -- -D warnings` — lint
 - `cargo install --path .` — install the `grove` binary
 - `cargo publish` — publish to crates.io
-- `gh release create vX.Y.Z --generate-notes` — tag and create a GitHub release
+- `gh release create "v$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')" --generate-notes` — tag and create a GitHub release
