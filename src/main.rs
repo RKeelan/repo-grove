@@ -1,3 +1,4 @@
+mod api;
 #[allow(dead_code)]
 mod config;
 mod dependabot;
@@ -149,7 +150,31 @@ fn main() -> anyhow::Result<()> {
                 dependabot::run_merge(&config, repo.as_deref())?;
             }
         },
-        Commands::Api { .. } => todo!("grove api"),
+        Commands::Api {
+            endpoint,
+            method,
+            skip_archived,
+            owner,
+            repo,
+            public_only,
+            private_only,
+            dry_run,
+        } => {
+            let config = config::Config::load()?;
+            api::run(
+                &config,
+                &api::ApiOptions {
+                    endpoint: &endpoint,
+                    method: &method,
+                    skip_archived,
+                    owner: owner.as_deref(),
+                    repo: repo.as_deref(),
+                    public_only,
+                    private_only,
+                    dry_run,
+                },
+            )?;
+        }
     }
 
     Ok(())
