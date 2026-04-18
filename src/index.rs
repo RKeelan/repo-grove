@@ -142,7 +142,7 @@ fn discover_owners(config: &Config, previous: &Option<Index>) -> Result<Vec<Owne
         })
         .collect();
 
-    owners.sort_by(|a, b| a.owner.to_lowercase().cmp(&b.owner.to_lowercase()));
+    owners.sort_by_key(|a| a.owner.to_lowercase());
     Ok(owners)
 }
 
